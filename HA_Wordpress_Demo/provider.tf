@@ -8,6 +8,6 @@ terraform {
 }
 
 provider "aws" {
-  profile = "default"
+  profile = "Nathan-Dev"
   region  = "eu-west-2"
 }
