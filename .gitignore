@@ -34,3 +34,5 @@ override.tf.json
 .DS_Store
 
 **/node_modules/*
+
+**/*.tfvars
