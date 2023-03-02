@@ -2,3 +2,7 @@
 sudo apt-get update
 sudo apt-get install nginx -y
 sudo service nginx start
+sudo nginx -v
+echo "####################################"
+echo "          Nginx Installed           "
+echo "####################################"

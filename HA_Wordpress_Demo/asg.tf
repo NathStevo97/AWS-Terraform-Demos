@@ -1,18 +1,12 @@
-resource "aws_placement_group" "test" {
-  name     = "test"
-  strategy = "cluster"
-}
-
 # Collection of EC2 Instances for autoscaling purposes
 resource "aws_autoscaling_group" "web-server" {
   name             = "nginx-webserver-asg"
-  max_size         = 5
-  min_size         = 2
+  max_size         = 4
+  min_size         = 1
   desired_capacity = 2
   force_delete     = true
-  #placement_group           = aws_placement_group.test.id
   launch_configuration = aws_launch_configuration.web-server-launch-config.name
-  vpc_zone_identifier  = ["subnet-05953dfd572b19719", "subnet-0c96f938594bb2024", "subnet-043e15fb2b4f1542c"]
+  vpc_zone_identifier  = [aws_subnet.public1.id, aws_subnet.public2.id]
   lifecycle {
     create_before_destroy = true
     ignore_changes = [
@@ -33,7 +27,10 @@ resource "aws_autoscaling_group" "web-server" {
 ## Metadata, specs, user data / scripts, etc.
 resource "aws_launch_configuration" "web-server-launch-config" {
   name          = "web_config"
-  image_id      = data.aws_ami.ubuntu.id
+  image_id = var.ami_id
   instance_type = "t2.micro"
-  user_data     = file("./files/nginx-install.sh")
+  #user_data = data.template_file.asg_init.rendered
+  lifecycle {
+    create_before_destroy = true
+  }
 }
