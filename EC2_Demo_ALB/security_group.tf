@@ -9,6 +9,7 @@ resource "aws_security_group" "http-sg" {
     to_port     = "80"
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    #cidr_blocks = var.ip_whitelist
   }
   egress {
     cidr_blocks = ["0.0.0.0/0"]
