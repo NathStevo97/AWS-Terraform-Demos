@@ -1,37 +1,22 @@
-locals {
-  engine_name = "postgres"
-  username = var.rds_username
-  password = var.rds_password
+//EFS is storing a mountable drive that the various ECS containers can use. This space will hold all the files that modify the base CKAN install.
+
+resource "aws_efs_file_system" "efs" {
 }
 
-resource "aws_db_option_group" "option_group" {
-  engine_name = local.engine_name
-  major_engine_version = "11"
+resource "aws_efs_mount_target" "efs-a" {
+  file_system_id = "${aws_efs_file_system.efs.id}"
+  subnet_id      = "${module.vpc.private_subnets.0}"
+    security_groups = ["${aws_security_group.efs.id}"]
 }
 
-resource "aws_db_parameter_group" "parameter_group" {
-  family = "postgres11"
+resource "aws_efs_mount_target" "efs-b" {
+  file_system_id = "${aws_efs_file_system.efs.id}"
+  subnet_id      = "${module.vpc.private_subnets.1}"
+    security_groups = ["${aws_security_group.efs.id}"]
 }
 
-resource "aws_db_instance" "database" {
-  allocated_storage = 20
-  storage_type = "gp2"
-  engine = local.engine_name
-  engine_version = "11"
-  instance_class = "db.t2.micro"
-  name = "ckan"
-  identifier = "ckan"
-  username = local.username
-  password = local.password
-  parameter_group_name = aws_db_parameter_group.parameter_group.name
-  option_group_name = aws_db_option_group.option_group.name
-  db_subnet_group_name = module.vpc.database_subnet_group
-  vpc_security_group_ids = [
-    "${aws_security_group.database.id}",
-    "${aws_security_group.administrative.id}",
-    "${aws_security_group.all-outbound.id}"
-  ]
-  final_snapshot_identifier = "dbfinalsnapshot"
-  skip_final_snapshot = true
-  publicly_accessible = true
+resource "aws_efs_mount_target" "efs-c" {
+  file_system_id = "${aws_efs_file_system.efs.id}"
+  subnet_id      = "${module.vpc.private_subnets.2}"
+  security_groups = ["${aws_security_group.efs.id}"]
 }

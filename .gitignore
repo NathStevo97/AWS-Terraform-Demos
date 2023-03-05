@@ -36,3 +36,5 @@ override.tf.json
 **/node_modules/*
 
 **/*.tfvars
+
+**/*.md
