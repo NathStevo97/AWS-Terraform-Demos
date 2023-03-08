@@ -19,7 +19,7 @@ resource "aws_db_instance" "database" {
   engine = local.engine_name
   engine_version = "11"
   instance_class = "db.t2.micro"
-  name = "ckan"
+  db_name = "ckan"
   identifier = "ckan"
   username = local.username
   password = local.password

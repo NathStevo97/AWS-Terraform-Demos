@@ -1,5 +1,3 @@
-//EFS is storing a mountable drive that the various ECS containers can use. This space will hold all the files that modify the base CKAN install.
-
 resource "aws_efs_file_system" "efs" {
 }
 

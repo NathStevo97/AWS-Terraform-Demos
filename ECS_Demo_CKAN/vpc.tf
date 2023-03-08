@@ -14,6 +14,14 @@ module "vpc" {
     "10.2.11.0/24",
     "10.2.12.0/24",
     "10.2.13.0/24"]
+    database_subnets = [
+    "10.2.21.0/24",
+    "10.2.22.0/24",
+    "10.2.23.0/24"]
+  elasticache_subnets = [
+    "10.2.31.0/24",
+    "10.2.32.0/24",
+    "10.2.33.0/24"]
 
   enable_dns_hostnames = true
   enable_dns_support = true
