@@ -1,25 +1,3 @@
-//---- elb
-
-resource "aws_security_group_rule" "all-http-to-elb" {
-  description       = "all-http-to-elb"
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.elb.id}"
-}
-
-resource "aws_security_group_rule" "all-https-to-elb" {
-  description       = "all-https-to-elb"
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.elb.id}"
-}
-
 //---- efs
 
 resource "aws_security_group_rule" "ecs-to-efs" {
@@ -30,18 +8,6 @@ resource "aws_security_group_rule" "ecs-to-efs" {
   source_security_group_id = "${aws_security_group.ecs.id}"
   to_port = 0
   type = "ingress"
-}
-
-//---- all-outbound
-
-resource "aws_security_group_rule" "all-outbound" {
-  description = "to anywhere"
-  from_port = 0
-  protocol = "-1"
-  security_group_id = "${aws_security_group.all-outbound.id}"
-  to_port = 0
-  cidr_blocks = ["0.0.0.0/0"]
-  type = "egress"
 }
 
 //---- ecs
