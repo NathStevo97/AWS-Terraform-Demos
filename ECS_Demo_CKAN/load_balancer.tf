@@ -27,13 +27,15 @@ resource "aws_alb_listener" "solr-http" {
 resource "aws_alb_target_group" "solr-http" {
   name = "solr"
   protocol = "HTTP"
-  vpc_id = "${module.vpc.vpc_id}"
+  vpc_id = module.vpc.vpc_id
   target_type = "ip"
   port = 8983
-  deregistration_delay = 10
+  deregistration_delay = 90
   
   health_check {
-    path = "/solr/ckan/admin/ping"
+    port = 8983
+    path = "/solr"
+
   }
   
 }
@@ -64,3 +66,57 @@ resource "aws_alb_target_group" "datapusher-http" {
     path = "/"
   }
 }
+
+##### CKAN
+
+resource "aws_alb_listener" "ckan-http" {
+  load_balancer_arn = "${aws_alb.application-load-balancer.id}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_alb_target_group.ckan-http.id}"
+    type             = "forward"
+  }
+
+  depends_on = [aws_alb_target_group.ckan-http]
+}
+
+resource "aws_alb_target_group" "ckan-http" {
+  name = "ckan"
+  protocol = "HTTP"
+  vpc_id = "${module.vpc.vpc_id}"
+  target_type = "ip"
+  port = 80
+  deregistration_delay = 10
+  
+  health_check {
+    path = "/api/3/action/status_show"
+  }
+
+}
+
+## Nginx Test
+/*
+resource "aws_alb_listener" "nginx-http" {
+  load_balancer_arn = "${aws_alb.application-load-balancer.id}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_alb_target_group.nginx-http.id}"
+    type             = "forward"
+  }
+
+  depends_on = [aws_alb_target_group.nginx-http]
+}
+
+resource "aws_alb_target_group" "nginx-http" {
+  name = "nginx"
+  protocol = "HTTP"
+  vpc_id = "${module.vpc.vpc_id}"
+  target_type = "ip"
+  port = 80
+  deregistration_delay = 10
+}
+*/

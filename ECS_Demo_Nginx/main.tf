@@ -37,7 +37,7 @@ resource "aws_ecs_service" "service" {
   task_definition  = aws_ecs_task_definition.task.id
   desired_count    = 1
   launch_type      = "FARGATE"
-  platform_version = "LATEST"
+  platform_version = "1.4.0"
 
   network_configuration {
     assign_public_ip = true

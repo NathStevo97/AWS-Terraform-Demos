@@ -14,6 +14,7 @@ module "vpc" {
     "10.2.11.0/24",
     "10.2.12.0/24",
     "10.2.13.0/24"]
+    /*
     database_subnets = [
     "10.2.21.0/24",
     "10.2.22.0/24",
@@ -22,6 +23,7 @@ module "vpc" {
     "10.2.31.0/24",
     "10.2.32.0/24",
     "10.2.33.0/24"]
+    */
 
   enable_dns_hostnames = true
   enable_dns_support = true
@@ -30,14 +32,14 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
-  create_database_subnet_group = true
-  create_database_subnet_route_table = true
-  create_database_internet_gateway_route = true
+  #create_database_subnet_group = true
+  #create_database_subnet_route_table = true
+  #create_database_internet_gateway_route = true
 
-  create_elasticache_subnet_group = true
-  create_elasticache_subnet_route_table = true
+  #create_elasticache_subnet_group = true
+  #create_elasticache_subnet_route_table = true
 
   tags = {
-    Name = "ckan-poc-vpc"
+    Name = "ckan-vpc"
   }
 }

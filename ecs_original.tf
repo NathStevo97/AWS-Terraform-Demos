@@ -1,11 +1,18 @@
-#----- ECS --------
-module "ecs" {
-  source = "terraform-aws-modules/ecs/aws"
-  cluster_name   = "ecs"
+/*
+# ecs
+A terraform module to create ecs resources
+*/
+
+locals {
+  name        = "ecs"
+  environment = "dev"
+
+  # This is the convention we use to know what belongs to each other
+  ec2_resources_name = "ecs-dev"
 }
 
 resource "aws_iam_role" "ecsTaskExecutionRole" {
-  name               = "ecs-execution-task-role"
+  name               = "ckan-test-ecs-execution-task-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
@@ -25,6 +32,14 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
+
+#----- ECS --------
+module "ecs" {
+  source = "terraform-aws-modules/ecs/aws"
+  cluster_name   = "ecs"
+}
+
+
 #----- ECS Services--------
 
 resource "aws_ecs_service" "ckan" {
@@ -33,7 +48,6 @@ resource "aws_ecs_service" "ckan" {
   cluster                            = module.ecs.cluster_name
   launch_type          = "FARGATE"
   scheduling_strategy  = "REPLICA"
-  platform_version = "1.4.0"
   desired_count                      = 1
   #deployment_minimum_healthy_percent = 0
   #deployment_maximum_percent         = 200
@@ -44,11 +58,11 @@ resource "aws_ecs_service" "ckan" {
     container_port   = "5000"
   }
 
-  #health_check_grace_period_seconds = 600
+  health_check_grace_period_seconds = 600
 
   network_configuration {
     assign_public_ip = true
-    subnets = module.vpc.private_subnets
+    subnets = module.vpc.public_subnets
     security_groups = [
       "${aws_security_group.ckan.id}",
       "${aws_security_group.all-outbound.id}"
@@ -66,13 +80,13 @@ resource "aws_ecs_service" "ckan" {
   ]
 }
 
+
 resource "aws_ecs_service" "datapusher" {
   name            = "datapusher"
   task_definition = "${aws_ecs_task_definition.datapusher.id}"
   cluster         = module.ecs.cluster_name
   desired_count   = 1
   launch_type          = "FARGATE"
-  platform_version = "1.4.0"
   scheduling_strategy  = "REPLICA"
 
   load_balancer {
@@ -86,7 +100,6 @@ resource "aws_ecs_service" "datapusher" {
   }
 
   network_configuration {
-    assign_public_ip = true
     subnets = module.vpc.private_subnets
     security_groups = [
       aws_security_group.datapusher.id,
@@ -101,9 +114,8 @@ resource "aws_ecs_service" "solr" {
   task_definition = aws_ecs_task_definition.solr.id
   cluster         = module.ecs.cluster_name
   launch_type          = "FARGATE"
-  platform_version = "1.4.0"
+  scheduling_strategy  = "REPLICA"
   desired_count   = 1
-  wait_for_steady_state = true
 
   #health_check_grace_period_seconds = 30
 
@@ -129,90 +141,25 @@ resource "aws_ecs_service" "solr" {
   depends_on = [
     aws_alb_listener.solr-http
   ]
+
 }
-
-/*
-
-### Test Nginx
-resource "aws_ecs_task_definition" "task" {
-  family                   = "service"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 2048
-  container_definitions    = <<DEFINITION
-  [
-    {
-      "name"      : "nginx",
-      "image"     : "nginx:1.23.1",
-      "cpu"       : 512,
-      "memory"    : 2048,
-      "essential" : true,
-      "portMappings" : [
-        {
-          "containerPort" : 80,
-          "hostPort"      : 80
-        }
-      ]
-    }
-  ]
-  DEFINITION
-}
-
-resource "aws_ecs_service" "service" {
-  name             = "service"
-  cluster         = module.ecs.cluster_name
-  task_definition  = aws_ecs_task_definition.task.id
-  desired_count    = 1
-  launch_type      = "FARGATE"
-  platform_version = "1.4.0"
-
-  load_balancer {
-    target_group_arn = aws_alb_target_group.nginx-http.arn
-    container_name   = "nginx"
-    container_port   = "80"
-  }
-
-  network_configuration {
-    #assign_public_ip = true
-    subnets = module.vpc.private_subnets
-    security_groups = [
-      "${aws_security_group.elb.id}",
-      "${aws_security_group.all-outbound.id}"
-    ]
-  }
-  lifecycle {
-    ignore_changes = [task_definition]
-  }
-}
-*/
 
 #----- ECS Task Definitions--------
+
 
 resource "aws_ecs_task_definition" "ckan" {
   family                = "ckan"
   cpu                      = 2048
   memory                   = 4096
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
-  task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn
   container_definitions = <<DEFINITION
   [
   {
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "secretOptions": null,
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.datapusher.id}",
-        "awslogs-region": "${var.region}",
-        "awslogs-stream-prefix": "ecs"
-      }
-    },
     "portMappings": [
       {
         "protocol": "tcp",
-        "containerPort": 80,
-        "hostPort": 80
+        "containerPort": 5000,
+        "hostPort": 5000
       }
     ],
     "cpu": 2048,
@@ -231,11 +178,11 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SITE_URL",
-        "value": "http://${aws_alb.application-load-balancer.dns_name}"
+        "value": "http://0.0.0.0"
       },
       {
         "name": "CKAN_PORT",
-        "value": "80"
+        "value": "5000"
       },
       {
         "name": "CKAN_SYSADMIN_NAME",
@@ -339,18 +286,16 @@ resource "aws_ecs_task_definition" "ckan" {
     "memory": 4096,
     "memoryReservation": 2048,
     "volumesFrom": [],
-    "image": "ckan/ckan-base:2.9.7-dev",
+    "image": "ckan/ckan-base:2.9.7",
     "essential": true,
     "name": "ckan"
     }
   ]
   DEFINITION
 
-  network_mode = "awsvpc"
-
   volume {
     name      = "efs-ckan-storage"
-    /* 
+    /*
     efs_volume_configuration {
       file_system_id = aws_efs_file_system.efs.id
       root_directory = "/mnt/efs/ckan/storage"
@@ -359,27 +304,22 @@ resource "aws_ecs_task_definition" "ckan" {
     */
     #host_path = "/mnt/efs/ckan/storage"
   }
+
+  network_mode = "awsvpc"
+
+  #depends_on = [aws_cloudwatch_log_group.ckan]
+
 }
+
 
 resource "aws_ecs_task_definition" "datapusher" {
   family                = "datapusher"
   cpu                      = 1024
   memory                   = 2048
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
-  task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn
   container_definitions = <<DEFINITION
   [
   {
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "secretOptions": null,
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.datapusher.id}",
-        "awslogs-region": "${var.region}",
-        "awslogs-stream-prefix": "ecs"
-      }
-    },
     "portMappings": [
       {
         "protocol": "tcp",
@@ -388,8 +328,11 @@ resource "aws_ecs_task_definition" "datapusher" {
       }
     ],
     "cpu": 1024,
+    "environment": [],
+    "mountPoints": [],
     "memory": 2048,
     "memoryReservation": 2048,
+    "volumesFrom": [],
     "image": "ckan/ckan-base-datapusher:0.0.19",
     "essential": true,
     "name": "datapusher"
@@ -399,7 +342,7 @@ resource "aws_ecs_task_definition" "datapusher" {
 
   network_mode = "awsvpc"
 
-  depends_on = [aws_cloudwatch_log_group.datapusher]
+  #depends_on = [aws_cloudwatch_log_group.datapusher]
 }
 
 resource "aws_ecs_task_definition" "solr" {
@@ -407,20 +350,9 @@ resource "aws_ecs_task_definition" "solr" {
   memory                   = 4096
   family                = "solr"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
-  task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn
   container_definitions = <<DEFINITION
   [
   {
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "secretOptions": null,
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.datapusher.id}",
-        "awslogs-region": "${var.region}",
-        "awslogs-stream-prefix": "ecs"
-      }
-    },
     "dnsSearchDomains": null,
     "portMappings": [
       {
@@ -431,14 +363,10 @@ resource "aws_ecs_task_definition" "solr" {
     ],
     "cpu": 2048,
     "environment": [],
-    "mountPoints": [
-      {
-        "containerPath": "/var/solr",
-        "sourceVolume": "efs-solr"
-      }
-    ],
+    "mountPoints": [],
     "memory": 4096,
-    "memoryReservation": 2048,
+    "memoryReservation": 512,
+    "volumesFrom": [],
     "image": "ckan/ckan-solr:2.9-solr8",
     "essential": true,
     "name": "solr"
@@ -448,10 +376,11 @@ resource "aws_ecs_task_definition" "solr" {
 
   volume {
     name      = "efs-solr"
-    /* 
+    /*
     efs_volume_configuration {
       file_system_id = aws_efs_file_system.efs.id
       root_directory = "/mnt/efs/solr"
+      transit_encryption      = "ENABLED"
     }
     */
     #host_path = "/mnt/efs/solr"
@@ -459,6 +388,6 @@ resource "aws_ecs_task_definition" "solr" {
 
   network_mode = "awsvpc"
 
-  depends_on = [aws_cloudwatch_log_group.solr]
+  #depends_on = [aws_cloudwatch_log_group.solr]
 
 }

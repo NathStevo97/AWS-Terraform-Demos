@@ -1,3 +1,4 @@
+/*
 resource "aws_efs_file_system" "efs" {
 }
 
@@ -18,3 +19,4 @@ resource "aws_efs_mount_target" "efs-c" {
   subnet_id      = "${module.vpc.private_subnets.2}"
   security_groups = ["${aws_security_group.efs.id}"]
 }
+*/
