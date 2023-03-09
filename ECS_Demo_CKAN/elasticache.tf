@@ -11,8 +11,9 @@ resource "aws_elasticache_cluster" "redis" {
   engine               = "redis"
   node_type            = "cache.t2.micro"
   num_cache_nodes      = 1
+  port                     = 6379
   parameter_group_name = aws_elasticache_parameter_group.redis.name
   engine_version       = "5.0.4"
   subnet_group_name = module.vpc.elasticache_subnet_group_name
-  security_group_ids = ["${aws_security_group.elb.id}"]
+  security_group_ids = ["${aws_security_group.redis.id}"]
 }
