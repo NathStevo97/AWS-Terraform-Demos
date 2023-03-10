@@ -32,3 +32,9 @@ resource "aws_lb_listener" "nginx-alb" {
     target_group_arn = aws_lb_target_group.nginx-alb.arn
   }
 }
+
+resource "aws_lb_target_group_attachment" "attach-app1" {
+  target_group_arn = aws_lb_target_group.nginx-alb.arn
+  target_id        = aws_autoscaling_group.web-server.id
+  port             = 80
+}
