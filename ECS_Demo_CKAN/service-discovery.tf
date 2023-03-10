@@ -3,7 +3,7 @@ resource "aws_service_discovery_private_dns_namespace" "ckan-infrastructure" {
   description = "ckan local service discovery namespace"
   vpc         = "${module.vpc.vpc_id}"
 }
-
+/*
 resource "aws_service_discovery_service" "ckan" {
   name = "ckan"
 
@@ -22,6 +22,7 @@ resource "aws_service_discovery_service" "ckan" {
     failure_threshold = 10
   }
 }
+*/
 
 resource "aws_service_discovery_service" "solr" {
   name = "solr"

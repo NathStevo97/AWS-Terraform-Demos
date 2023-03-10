@@ -3,27 +3,9 @@ module "vpc" {
 
   name = var.vpc_name
 
-  cidr = "10.2.0.0/16"
+  cidr = local.ckan.default.cidr
 
-  azs = var.vpc_availability_zones
-  private_subnets = [
-    "10.2.1.0/24",
-    "10.2.2.0/24",
-    "10.2.3.0/24"]
-    public_subnets = [
-    "10.2.11.0/24",
-    "10.2.12.0/24",
-    "10.2.13.0/24"]
-    /*
-    database_subnets = [
-    "10.2.21.0/24",
-    "10.2.22.0/24",
-    "10.2.23.0/24"]
-  elasticache_subnets = [
-    "10.2.31.0/24",
-    "10.2.32.0/24",
-    "10.2.33.0/24"]
-    */
+  azs = local.ckan.default.zones
 
   enable_dns_hostnames = true
   enable_dns_support = true
@@ -32,12 +14,13 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
-  #create_database_subnet_group = true
-  #create_database_subnet_route_table = true
-  #create_database_internet_gateway_route = true
-
-  #create_elasticache_subnet_group = true
-  #create_elasticache_subnet_route_table = true
+  public_subnets = [
+    for n in toset(values(local.zone_map)) : cidrsubnet (local.ckan.default.cidr, 8, tonumber(n))
+    ]
+  
+  private_subnets = [
+    for n in toset(values(local.zone_map)) : cidrsubnet (local.ckan.default.cidr, 8, tonumber(n) + 128 )
+    ]
 
   tags = {
     Name = "ckan-vpc"

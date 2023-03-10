@@ -10,20 +10,20 @@ resource "aws_ecs_task_definition" "task" {
   family                   = "service"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE", "EC2"]
-  cpu                      = 512
-  memory                   = 2048
+  cpu                      = 2048
+  memory                   = 4096
   container_definitions    = <<DEFINITION
   [
     {
-      "name"      : "nginx",
-      "image"     : "nginx:1.23.1",
-      "cpu"       : 512,
-      "memory"    : 2048,
+      "name"      : "solr",
+      "image"     : "ckan/ckan-solr:2.9",
+      "cpu"       : 2048,
+      "memory"    : 4096,
       "essential" : true,
       "portMappings" : [
         {
-          "containerPort" : 80,
-          "hostPort"      : 80
+          "containerPort" : 8983,
+          "hostPort"      : 8983
         }
       ]
     }
