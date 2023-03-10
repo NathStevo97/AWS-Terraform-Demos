@@ -30,6 +30,7 @@ locals {
         default = {
             name = "ckan"
             zones = formatlist("%s%s", var.region, keys(local.zone_map))
+            rds_database_name = var.rds_database_name
             rds_username = var.rds_username
             rds_password = var.rds_password
             single_nat_gateway = true

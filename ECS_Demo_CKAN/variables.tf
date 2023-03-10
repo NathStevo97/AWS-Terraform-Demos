@@ -10,6 +10,10 @@ variable "admin-cidr-blocks" {
   type = list(string)
 }
 
+variable "rds_database_name" {
+  type = string
+}
+
 variable "rds_username" {
   type = string
 }
