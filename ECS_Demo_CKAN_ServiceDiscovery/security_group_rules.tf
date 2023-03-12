@@ -75,7 +75,8 @@ resource "aws_security_group_rule" "ckan-to-database" {
   security_group_id        = aws_security_group.database.id
   to_port                  = 0
   type                     = "ingress"
-  source_security_group_id = aws_security_group.ckan.id
+  #source_security_group_id = aws_security_group.ckan.id
+  cidr_blocks = [ "0.0.0.0/0" ]
 }
 
 //---- administrative

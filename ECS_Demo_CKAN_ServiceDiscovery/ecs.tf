@@ -27,7 +27,7 @@ module "ecs" {
 }
 
 # CKAN
-/*
+
 resource "aws_ecs_service" "ckan" {
   name                = "ckan"
   task_definition     = aws_ecs_task_definition.ckan.id
@@ -217,7 +217,7 @@ resource "aws_ecs_task_definition" "ckan" {
         "sourceVolume": "efs-ckan-storage"
       }
     ],
-    "image": "ckan/ckan-base:2.9.7",
+    "image": "ckan/ckan-base:ckan-2.10.0-dev",
     "name": "ckan"
     }
   ]
@@ -232,7 +232,7 @@ resource "aws_ecs_task_definition" "ckan" {
   depends_on = [aws_cloudwatch_log_group.ckan]
 
 }
-*/
+
 
 # Datapusher
 
