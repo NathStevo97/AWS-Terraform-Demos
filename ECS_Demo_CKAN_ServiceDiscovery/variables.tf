@@ -1,9 +1,9 @@
 variable "admin-cidr-blocks" {
-  type    = list(string)
+  type = list(string)
 }
 
 variable "region" {
-  type    = string
+  type = string
 }
 
 variable "availability_zone_map" {
@@ -11,25 +11,41 @@ variable "availability_zone_map" {
 }
 
 variable "name" {
-  type    = string
+  type = string
 }
 
 variable "rds_database_name" {
-  type    = string
+  type = string
 }
 
 variable "rds_username" {
-  type    = string
+  type = string
 }
 
 variable "rds_password" {
-  type    = string
+  type = string
 }
 
 variable "cidr" {
-  type    = string
+  type = string
 }
 
 variable "hosted_zone_id" {
-  type    = string
+  type = string
+}
+
+variable "rds_readonly_user" {
+  type = string
+}
+
+variable "rds_readonly_password" {
+  type = string
+}
+
+variable "ckan_admin" {
+  type = string
+}
+
+variable "ckan_admin_password" {
+  type = string
 }
