@@ -62,7 +62,7 @@ resource "aws_alb_target_group" "solr-http" {
 }
 
 //------------ CKAN
-
+/*
 resource "aws_alb_listener" "ckan-http" {
   load_balancer_arn = aws_alb.application-load-balancer.id
   port              = "80"
@@ -87,4 +87,4 @@ resource "aws_alb_target_group" "ckan-http" {
     path = "/api/3/action/status_show"
   }
 }
-
+*/
