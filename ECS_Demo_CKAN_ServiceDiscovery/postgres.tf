@@ -35,3 +35,21 @@ resource "aws_db_instance" "database" {
   skip_final_snapshot       = true
   publicly_accessible       = true
 }
+/*
+module "rds-boostrap" {
+  source = "github.com/fvinas/tf_rds_boostrap"
+
+  name = "RDS-BOOSTRAP"
+
+  subnet_id = module.vpc.private_subnets
+  security_group_ids = ["${aws_security_group.ecs.id}"]
+
+  endpoint = "${aws_db_instance.database.endpoint}"
+  port = "${aws_db_instance.database.port}"
+  database = "${aws_db_instance.database.name}"
+  master_username = "${aws_db_instance.database.username}"
+  master_password = "${var.rds_password}"
+
+  sql_script = "${file("./rds-bootstrap.sql")}"
+}
+*/

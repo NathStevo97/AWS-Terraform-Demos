@@ -62,11 +62,6 @@ resource "aws_ecs_service" "ckan" {
     aws_alb_listener.solr-http
   ]
 
-  # Optional: Allow external changes without Terraform plan difference
-  lifecycle {
-    ignore_changes = ["desired_count"]
-  }
-
 }
 
 resource "aws_ecs_task_definition" "ckan" {
@@ -110,7 +105,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SITE_URL",
-        "value": "http://${aws_alb.application-load-balancer.dns_name}"
+        "value": "http://ckan.nathanstephenson.link"
       },
       {
         "name": "CKAN_PORT",
@@ -126,7 +121,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SYSADMIN_EMAIL",
-        "value": "ckan@${aws_alb.application-load-balancer.dns_name}"
+        "value": "ckan@ckan.nathanstephenson.link"
       },
       {
         "name": "TZ",
@@ -182,7 +177,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN__PLUGINS",
-        "value": "odp_theme showcase scheming_datasets image_view text_view recline_view datastore datapusher pdf_view resource_proxy geo_view pages envvars"
+        "value": "image_view text_view recline_view datastore datapusher resource_proxy envvars"
       },
       {
         "name": "CKAN__VIEWS__DEFAULT_VIEWS",
@@ -217,7 +212,7 @@ resource "aws_ecs_task_definition" "ckan" {
         "sourceVolume": "efs-ckan-storage"
       }
     ],
-    "image": "ckan/ckan-base:ckan-2.10.0-dev",
+    "image": "ckan/ckan-base:ckan-2.9.7",
     "name": "ckan"
     }
   ]
