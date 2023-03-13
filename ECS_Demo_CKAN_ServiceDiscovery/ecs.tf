@@ -96,10 +96,6 @@ resource "aws_ecs_task_definition" "ckan" {
         "value": "${aws_db_instance.database.password}"
       },
       {
-        "name": "DATASTORE_READONLY_PASSWORD",
-        "value": "${var.rds_readonly_password}"
-      },
-      {
         "name": "CKAN_SITE_ID",
         "value": "default"
       },
@@ -134,10 +130,6 @@ resource "aws_ecs_task_definition" "ckan" {
       {
         "name": "CKAN_DATASTORE_WRITE_URL",
         "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.address}/datastore"
-      },
-      {
-        "name": "CKAN_DATASTORE_READ_URL",
-        "value": "postgresql://${var.rds_readonly_user}:${var.rds_readonly_password}@${aws_db_instance.database.address}/datastore"
       },
       {
         "name": "CKAN_SOLR_URL",

@@ -27,29 +27,33 @@ resource "aws_db_instance" "database" {
   option_group_name    = aws_db_option_group.option_group.name
   db_subnet_group_name = aws_db_subnet_group.subnet_group.name
   vpc_security_group_ids = [
-    "${aws_security_group.database.id}",
-    "${aws_security_group.administrative.id}",
-    "${aws_security_group.all-outbound.id}"
+    aws_security_group.database.id,
+    aws_security_group.administrative.id,
+    aws_security_group.all-outbound.id
   ]
   final_snapshot_identifier = "dbfinalsnapshot"
   skip_final_snapshot       = true
   publicly_accessible       = true
 }
-/*
-module "rds-boostrap" {
-  source = "github.com/fvinas/tf_rds_boostrap"
 
-  name = "RDS-BOOSTRAP"
+# Postgres - Create Role
+#CREATE ROLE datastore_ro NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN PASSWORD 'datastore_ro_password';
 
-  subnet_id = module.vpc.private_subnets
-  security_group_ids = ["${aws_security_group.ecs.id}"]
-
-  endpoint = "${aws_db_instance.database.endpoint}"
-  port = "${aws_db_instance.database.port}"
-  database = "${aws_db_instance.database.name}"
-  master_username = "${aws_db_instance.database.username}"
-  master_password = "${var.rds_password}"
-
-  sql_script = "${file("./rds-bootstrap.sql")}"
+resource "postgresql_role" "datastore_ro" {
+  name = "datastore_ro"
+  login = true
+  password = var.rds_readonly_password
+  superuser = false
+  create_database = false
+  create_role = false
 }
-*/
+
+
+# CREATE DATABASE datastore OWNER ckan ENCODING 'utf-8';
+# Postgres - Create Database
+resource "postgresql_database" "datastore" {
+  name = "datastore"
+  owner = "ckan"
+  allow_connections = true
+  encoding = "UTF8"
+}
