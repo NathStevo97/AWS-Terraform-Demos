@@ -20,6 +20,7 @@ resource "aws_security_group_rule" "all-https-to-elb" {
   security_group_id = aws_security_group.elb.id
 }
 
+/*
 //---- efs
 
 resource "aws_security_group_rule" "ecs-to-efs" {
@@ -31,6 +32,7 @@ resource "aws_security_group_rule" "ecs-to-efs" {
   to_port                  = 0
   type                     = "ingress"
 }
+*/
 
 //---- all-outbound
 
@@ -44,6 +46,7 @@ resource "aws_security_group_rule" "all-outbound" {
   type              = "egress"
 }
 
+/*
 //---- ecs
 
 resource "aws_security_group_rule" "ecs-to-ecs-ingress" {
@@ -65,19 +68,23 @@ resource "aws_security_group_rule" "ecs-to-ecs-egress" {
   type                     = "egress"
   source_security_group_id = aws_security_group.ecs.id
 }
+*/
 
+/*
 //---- database
 
-resource "aws_security_group_rule" "ckan-to-database" {
+resource "aws_security_group_rule" "database-ingress" {
   description              = "ckan-to-database"
-  from_port                = 0
+  from_port                = 5432
   protocol                 = "-1"
   security_group_id        = aws_security_group.database.id
   to_port                  = 5432
   type                     = "ingress"
   #source_security_group_id = aws_security_group.ckan.id
-  cidr_blocks = [ "0.0.0.0/0" ]
+  #cidr_blocks = [ "0.0.0.0/0" ]
+  cidr_blocks = var.admin-cidr-blocks
 }
+*/
 
 //---- administrative
 
@@ -95,10 +102,10 @@ resource "aws_security_group_rule" "all-from-admin-ip" {
 
 resource "aws_security_group_rule" "ckan-to-redis" {
   description              = "ckan-to-redis"
-  from_port                = 0
+  from_port                = 6379
   protocol                 = "-1"
   security_group_id        = aws_security_group.redis.id
-  to_port                  = 0
+  to_port                  = 6379
   type                     = "ingress"
   source_security_group_id = aws_security_group.ckan.id
 }
@@ -107,7 +114,7 @@ resource "aws_security_group_rule" "ckan-to-redis" {
 
 resource "aws_security_group_rule" "datapusher-to-ckan" {
   description              = "datapusher-to-ckan"
-  from_port                = 0
+  from_port                = 8800
   protocol                 = "-1"
   security_group_id        = aws_security_group.ckan.id
   to_port                  = 0
@@ -152,7 +159,7 @@ resource "aws_security_group_rule" "ckan-to-datapusher" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.datapusher.id
-  to_port                  = 0
+  to_port                  = 8800
   type                     = "ingress"
   source_security_group_id = aws_security_group.ckan.id
 }
@@ -162,7 +169,7 @@ resource "aws_security_group_rule" "elb-to-datapusher" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.datapusher.id
-  to_port                  = 0
+  to_port                  = 8800
   type                     = "ingress"
   source_security_group_id = aws_security_group.elb.id
 }
@@ -174,7 +181,7 @@ resource "aws_security_group_rule" "ckan-to-solr" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.solr.id
-  to_port                  = 0
+  to_port                  = 8983
   type                     = "ingress"
   source_security_group_id = aws_security_group.ckan.id
 }
@@ -184,7 +191,7 @@ resource "aws_security_group_rule" "elb-to-solr" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.solr.id
-  to_port                  = 0
+  to_port                  = 8983
   type                     = "ingress"
   source_security_group_id = aws_security_group.elb.id
 }
@@ -194,7 +201,7 @@ resource "aws_security_group_rule" "ecs-to-solr" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.solr.id
-  to_port                  = 0
+  to_port                  = 8983
   type                     = "ingress"
   source_security_group_id = aws_security_group.ecs.id
 }
@@ -204,17 +211,17 @@ resource "aws_security_group_rule" "solr-to-solr-ingress" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.solr.id
-  to_port                  = 0
+  to_port                  = 8983
   type                     = "ingress"
   source_security_group_id = aws_security_group.solr.id
 }
 
 resource "aws_security_group_rule" "solr-to-solr-egress" {
   description              = "solr-to-solr"
-  from_port                = 0
+  from_port                = 8983
   protocol                 = "-1"
   security_group_id        = aws_security_group.solr.id
-  to_port                  = 0
+  to_port                  = 8983
   type                     = "egress"
   source_security_group_id = aws_security_group.solr.id
 }

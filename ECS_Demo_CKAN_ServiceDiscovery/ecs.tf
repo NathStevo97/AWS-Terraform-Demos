@@ -27,7 +27,7 @@ module "ecs" {
 }
 
 # CKAN
-
+/*
 resource "aws_ecs_service" "ckan" {
   name                = "ckan"
   task_definition     = aws_ecs_task_definition.ckan.id
@@ -46,7 +46,7 @@ resource "aws_ecs_service" "ckan" {
   health_check_grace_period_seconds = 600
 
   network_configuration {
-    subnets = module.vpc.private_subnets
+    subnets = module.vpc.public_subnets
     security_groups = [
       "${aws_security_group.ckan.id}",
       "${aws_security_group.all-outbound.id}"
@@ -96,6 +96,10 @@ resource "aws_ecs_task_definition" "ckan" {
         "value": "${aws_db_instance.database.password}"
       },
       {
+        "name": "DATASTORE_READONLY_PASSWORD",
+        "value": "${var.rds_readonly_password}"
+      },
+      {
         "name": "CKAN_SITE_ID",
         "value": "default"
       },
@@ -132,8 +136,12 @@ resource "aws_ecs_task_definition" "ckan" {
         "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.address}/datastore"
       },
       {
+        "name": "CKAN_DATASTORE_READ_URL",
+        "value": "postgresql://${var.rds_readonly_user}:${var.rds_readonly_password}@${aws_db_instance.database.address}/datastore"
+      },
+      {
         "name": "CKAN_SOLR_URL",
-        "value": "http://${aws_service_discovery_service.solr.name}.${aws_service_discovery_private_dns_namespace.ckan-infrastructure.name}:8983/solr/ckan"
+        "value": "http://${aws_alb.application-load-balancer.dns_name}:8983/solr/#/ckan"
       },
       {
         "name": "CKAN_REDIS_URL",
@@ -204,7 +212,7 @@ resource "aws_ecs_task_definition" "ckan" {
         "sourceVolume": "efs-ckan-storage"
       }
     ],
-    "image": "ckan/ckan-base:ckan-2.9.7",
+    "image": "ckan/ckan-base:2.9.7",
     "name": "ckan"
     }
   ]
@@ -219,7 +227,7 @@ resource "aws_ecs_task_definition" "ckan" {
   depends_on = [aws_cloudwatch_log_group.ckan]
 
 }
-
+*/
 
 # Datapusher
 

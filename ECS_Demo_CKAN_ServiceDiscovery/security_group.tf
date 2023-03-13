@@ -22,11 +22,13 @@ resource "aws_security_group" "ecs" {
   vpc_id      = module.vpc.vpc_id
 }
 
+/*
 resource "aws_security_group" "database" {
   name        = "database"
   description = "allow from ckan"
   vpc_id      = module.vpc.vpc_id
 }
+*/
 
 resource "aws_security_group" "administrative" {
   name        = "administrative"

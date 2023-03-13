@@ -6,7 +6,6 @@ resource "aws_alb" "application-load-balancer" {
     "${aws_security_group.all-outbound.id}"
   ]
   subnets = module.vpc.public_subnets
-
 }
 
 

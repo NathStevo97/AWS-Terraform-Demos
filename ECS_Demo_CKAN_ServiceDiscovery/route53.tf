@@ -2,7 +2,7 @@ data "aws_route53_zone" "zone" {
   zone_id = var.hosted_zone_id
   private_zone = false
 }
-
+/*
 resource "aws_route53_record" "main" {
   #zone_id = data.aws_route53_zone.zone.zone_id
   zone_id = "/hostedzone/${var.hosted_zone_id}"
@@ -15,6 +15,7 @@ resource "aws_route53_record" "main" {
     zone_id                = "${aws_alb.application-load-balancer.zone_id}"
   }
 }
+*/
 
 resource "aws_route53_record" "rds_cname" {
   name = "db"

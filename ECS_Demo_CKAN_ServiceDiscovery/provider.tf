@@ -17,10 +17,12 @@ provider "aws" {
 }
 
 provider "postgresql" {
+  alias = "ckan-datastore"
   scheme   = "awspostgres"
-  host = "${aws_db_instance.database.address}"
+  host = aws_db_instance.database.address
   username = var.rds_username
   port     = 5432
   password = var.rds_password
   superuser = false
+  connect_timeout = 720
 }
