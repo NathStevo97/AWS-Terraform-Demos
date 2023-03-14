@@ -83,7 +83,7 @@ resource "aws_security_group_rule" "cidr" {
 #CREATE ROLE datastore_ro NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN PASSWORD 'datastore_ro_password';
 
 resource "postgresql_role" "datastore_ro" {
-  provider = "postgresql.ckan-datastore"
+  #provider = "postgresql.ckan-datastore"
   name = "datastore_ro"
   login = true
   password = var.rds_readonly_password

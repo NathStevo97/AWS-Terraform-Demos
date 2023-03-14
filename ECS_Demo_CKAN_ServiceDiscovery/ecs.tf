@@ -27,7 +27,7 @@ module "ecs" {
 }
 
 # CKAN
-/*
+
 resource "aws_ecs_service" "ckan" {
   name                = "ckan"
   task_definition     = aws_ecs_task_definition.ckan.id
@@ -36,16 +36,18 @@ resource "aws_ecs_service" "ckan" {
   launch_type         = "FARGATE"
   scheduling_strategy = "REPLICA"
   platform_version    = "1.4.0"
-
+  /*
   load_balancer {
     target_group_arn = aws_alb_target_group.ckan-http.id
     container_name   = "ckan"
     container_port   = "5000"
   }
+  */
 
-  health_check_grace_period_seconds = 600
+  #health_check_grace_period_seconds = 600
 
   network_configuration {
+    assign_public_ip = true
     subnets = module.vpc.public_subnets
     security_groups = [
       "${aws_security_group.ckan.id}",
@@ -56,11 +58,12 @@ resource "aws_ecs_service" "ckan" {
   service_registries {
     registry_arn = aws_service_discovery_service.ckan.arn
   }
-
+  /*
   depends_on = [
     aws_alb_listener.ckan-http,
     aws_alb_listener.solr-http
   ]
+  */
 
 }
 
@@ -89,6 +92,7 @@ resource "aws_ecs_task_definition" "ckan" {
         "hostPort": 5000
       }
     ],
+    "command": [ "/bin/sh", "sudo chmod 777 -R /var/lib/ckan/" ],
     "cpu": 2048,
     "environment": [
       {
@@ -105,7 +109,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SITE_URL",
-        "value": "http://ckan.nathanstephenson.link"
+        "value": "http://localhost:5000"
       },
       {
         "name": "CKAN_PORT",
@@ -129,19 +133,19 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SQLALCHEMY_URL",
-        "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.address}/ckan"
+        "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.endpoint}/ckan"
       },
       {
         "name": "CKAN_DATASTORE_WRITE_URL",
-        "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.address}/datastore"
+        "value": "postgresql://${aws_db_instance.database.username}:${aws_db_instance.database.password}@${aws_db_instance.database.endpoint}/datastore"
       },
       {
         "name": "CKAN_DATASTORE_READ_URL",
-        "value": "postgresql://${var.rds_readonly_user}:${var.rds_readonly_password}@${aws_db_instance.database.address}/datastore"
+        "value": "postgresql://${var.rds_readonly_user}:${var.rds_readonly_password}@${aws_db_instance.database.endpoint}/datastore"
       },
       {
         "name": "CKAN_SOLR_URL",
-        "value": "http://${aws_alb.application-load-balancer.dns_name}:8983/solr/#/ckan"
+        "value": "http://${aws_service_discovery_service.solr.name}.${aws_service_discovery_private_dns_namespace.ckan-infrastructure.name}:8983/solr/ckan"
       },
       {
         "name": "CKAN_REDIS_URL",
@@ -157,7 +161,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SMTP_SERVER",
-        "value": "smtp.${aws_alb.application-load-balancer.dns_name}:25"
+        "value": "smtp.ckan.nathanstephenson.link:25"
       },
       {
         "name": "CKAN_SMTP_STARTTLS",
@@ -173,7 +177,7 @@ resource "aws_ecs_task_definition" "ckan" {
       },
       {
         "name": "CKAN_SMTP_MAIL_FROM",
-        "value": "ckan@${aws_alb.application-load-balancer.dns_name}"
+        "value": "ckan@ckan.nathanstephenson.link"
       },
       {
         "name": "CKAN__PLUGINS",
@@ -224,10 +228,10 @@ resource "aws_ecs_task_definition" "ckan" {
 
   network_mode = "awsvpc"
 
-  depends_on = [aws_cloudwatch_log_group.ckan]
+  #depends_on = [aws_cloudwatch_log_group.ckan]
 
 }
-*/
+
 
 # Datapusher
 
@@ -239,12 +243,13 @@ resource "aws_ecs_service" "datapusher" {
   launch_type         = "FARGATE"
   scheduling_strategy = "REPLICA"
   platform_version    = "1.4.0"
-
+  /*
   load_balancer {
     target_group_arn = aws_alb_target_group.datapusher-http.id
     container_name   = "datapusher"
     container_port   = "8800"
   }
+  */
 
   service_registries {
     registry_arn = aws_service_discovery_service.datapusher.arn
@@ -310,30 +315,33 @@ resource "aws_ecs_service" "solr" {
   launch_type                       = "FARGATE"
   scheduling_strategy               = "REPLICA"
   platform_version                  = "1.4.0"
-  health_check_grace_period_seconds = 120
+  #health_check_grace_period_seconds = 120
   enable_execute_command            = true
-
+  /*
   load_balancer {
     target_group_arn = aws_alb_target_group.solr-http.id
     container_name   = "solr"
     container_port   = "8983"
   }
+  */
 
   service_registries {
     registry_arn = aws_service_discovery_service.solr.arn
   }
 
   network_configuration {
-    subnets = module.vpc.private_subnets
+    assign_public_ip = true
+    subnets = module.vpc.public_subnets
     security_groups = [
       aws_security_group.solr.id,
       aws_security_group.all-outbound.id
     ]
   }
-
+  /*
   depends_on = [
     aws_alb_listener.solr-http
   ]
+  */
 
 }
 
@@ -365,7 +373,7 @@ resource "aws_ecs_task_definition" "solr" {
     "cpu": 2048,
     "memory": 4096,
     "memoryReservation": 1024,
-    "image": "ckan/ckan-solr:2.9",
+    "image": "ckan/ckan-solr:2.9-solr8",
     "essential": true,
     "name": "solr"
     }

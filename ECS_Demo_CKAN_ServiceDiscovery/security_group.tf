@@ -1,9 +1,3 @@
-resource "aws_security_group" "elb" {
-  name        = "elb"
-  description = "allow http/s from anywhere"
-  vpc_id      = module.vpc.vpc_id
-}
-
 resource "aws_security_group" "efs" {
   name        = "efs"
   description = "allow from ECS"
@@ -15,20 +9,6 @@ resource "aws_security_group" "all-outbound" {
   description = "allow to anywhere"
   vpc_id      = module.vpc.vpc_id
 }
-
-resource "aws_security_group" "ecs" {
-  name        = "ecs"
-  description = "allow from ELB"
-  vpc_id      = module.vpc.vpc_id
-}
-
-/*
-resource "aws_security_group" "database" {
-  name        = "database"
-  description = "allow from ckan"
-  vpc_id      = module.vpc.vpc_id
-}
-*/
 
 resource "aws_security_group" "administrative" {
   name        = "administrative"

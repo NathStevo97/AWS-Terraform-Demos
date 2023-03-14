@@ -20,9 +20,9 @@ services:
     build:
       context: ./ckan/
     expose:
-    - 80
+    - 5000
     ports:
-    - 80:80
+    - 5000:5000
     networks:
       vpc:
         ipv4_address: 10.10.0.2
@@ -108,16 +108,3 @@ services:
     networks:
       vpc:
         ipv4_address: 10.10.0.6
-
-  smtp:
-    image: reachfive/fake-smtp-server
-    expose:
-    - 1025
-    - 1080
-    ports:
-    - 1025:1025
-    - 1080:1080
-    networks:
-      vpc:
-        ipv4_address: 10.10.0.7
-    command: ["node", "index.js", "--auth", "fake:fake"]

@@ -17,7 +17,7 @@ provider "aws" {
 }
 
 provider "postgresql" {
-  alias = "ckan-datastore"
+  #alias = "ckan-datastore"
   scheme   = "awspostgres"
   host = aws_db_instance.database.address
   username = var.rds_username
